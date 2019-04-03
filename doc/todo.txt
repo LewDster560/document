@@ -1,0 +1,454 @@
+11.19
+七张表
+
+账户表
+结算账户表
+资金明细表
+
+订单划转表
+解冻冻结表
+充值表
+提现表
+
+
+T2020出金时间确定出金了吗
+
+查询电子凭证数据要不要保留
+出金额度问题
+查询账户查谁
+
+
+
+
+
+====================================
+使用
+	统一社会信用代码
+删除下面三个字段
+	组织机构代码证
+	营业执照
+	税务登记号
+测试通知
+	
+修改一下表字段
+增加账号类型表
+增加下面参数
+交易
+租户ID 			tid
+租户编号		tn
+机构编号		on
+
+====================================
+
+开户---成功---状态修改为已开户（1）
+	---其它---状态修改为开户中（0）
+	---失败---状态修改为开户失败（8）
+修改
+	---成功---修改字段
+销户
+	---成功---修改状态为已销户（3）
+接口：根据资金账号修改状态
+====================================
+结算账户维护
+0 绑定失败
+1 绑定/变更/删除成功（此模式下无需验证）
+2 申请绑定/变更成功，需人工审核激活
+3 申请绑定/变更成功，需要短信验证
+4 申请绑定/变更成功，需要打款验证（被动打款）
+
+---返回state为1，ID加入账户表
+---返回state为其它时，不操作
+	---t1032激活
+	1 激活/验证成功
+	2验证成功，需人工审核激活
+	9激活/验证失败
+	---返回State为1----结算账户表状态修改为1----绑卡成功-ID加入账户表
+	---返回State为2----T1035----返回状态为1----结算账户表状态修改为1----绑卡成功-ID加入账户表
+									
+	---返回State为9----绑卡失败结算账户表状态修改为0
+	
+====================================
+入金	记就完了
+====================================
+出金
+	状态两个-出金中
+			-已出金
+====================================	
+冻结
+	返回成功-增加一笔
+解冻
+	返回成功-增加一笔
+====================================	
+订单划转
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+问题
+订单划转记几笔，明细里怎么记A:分别记两笔
+手续费怎么记无手续费
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+开销户记录
+提现增加资金明细
+行为记录表
+	接口ID,接口名，请求&返回报文
+====================================
+流水号规则修改
+账户表-资金明细ID删除				OK
+账户类型--默认为1，不用客户选择		OK
+加上租户名称						OK
+资金明细加余额						OK
+====================================
+余额计算
+资金余额
+	充值+划转收款-提现-划转付款
+可用资金
+	充值+划转收款-提现-划转付款-冻结资金
+冻结资金
+	冻结资金-解冻资金
+====================================
+update首次填入
+fbss_am_account_behavior加入成功失败状态
+====================================
+修改账户
+名称不能
+客户号可以
+客户性质
+====================================
+返回修改							OK
+下行平台推送
+	用资金账户，找到租户编号，放到Head里面
+	(根据资金号找租户)
+	再加下面信息
+	加个时间戳
+	
+	http://192.168.9.253:8998/boardcast
+URI 
+time
+推送激活结果		account-settlement-activation
+推送结算提现时间	account-withdraw-result
+推送充值结果		account-recharge-result
+
+
+====================================
+所有的返回，请求的xml写入	OK
+所有 租户相关信息入库		OK
+账户类型重新生成表			OK
+转账类型
+
+
+====================================
+
+
+
+查询账户列表及详情
+查询流水列表及详情 
+修改行为记录表请求返回参数格式
+交易类完善租户信息 
+账户类完善租户信息 
+账户类型增删改查
+
+
+
+https://fzkl0h.axshare.com 运营端后台
+https://b1qith.axshare.com 供应商前端
+https://cc4xzf.axshare.com 核心企业更新版
+https://yiew1b.axshare.com金融机构更新版
+
+
+
+
+供应商前端 ：https://b1qith.axshare.com    密码：ftk123
+运营端后台 ：https://fzkl0h.axshare.com    密码：ftk123
+金融机构：https://jsgg3z.axshare.com   密码:ftk123
+核心企业：https://ck06y4.axshare.com   密码:ftk123
+
+
+
+
+准入 占用核心企业额度
+
+
+
+
+
+
+
+表
+供应商账户表
+  `id` varchar(50) NOT NULL,
+  `mobile_phone` varchar(20) DEFAULT NULL,
+  `password` varchar(256) DEFAULT NULL,
+  `create_time` timestamp NULL DEFAULT NULL,
+  `login_time` datetime DEFAULT NULL COMMENT '登录时间',
+  `company_name` varchar(40) DEFAULT NULL COMMENT '企业名称',
+  `business_license_number` varchar(50) DEFAULT NULL COMMENT '营业执照号',
+  `register_type` varchar(15) DEFAULT NULL COMMENT '注册类型 01通过注册 02 通过核心企业白名单上传',
+  `password_flag` varchar(5) DEFAULT NULL,
+  `lockpass_date` timestamp NULL DEFAULT NULL,
+  `the_time_login` timestamp NULL DEFAULT NULL,
+  `invite_code` varchar(25) DEFAULT NULL,
+  `login_flag` varchar(5) DEFAULT '01' COMMENT '判断用户是否是首次登陆 01首次 02不是',
+  `cert_status` varchar(5) DEFAULT '01' COMMENT '证书状态 01未生成02已生成 ',
+  `subject_dn` varchar(256) DEFAULT '' COMMENT '用户证书主题',
+  `serial_number` varchar(50) DEFAULT '' COMMENT '证书序列号',
+  `fk_core_enterprise_id` varchar(50) DEFAULT NULL COMMENT '所属核心企业ID（核心企业分类表ID）',
+  `fk_core_enterprise_name` varchar(30) DEFAULT NULL COMMENT '所属核心企业名称',
+  `latest_upload_time` timestamp NULL DEFAULT NULL COMMENT '最新上传时间',
+  `user_check_time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '用户登录校验时间',
+  `fk_white_supplier_id` varchar(50) DEFAULT NULL COMMENT '关联供应商白名单id',
+  `fk_cert_id` varchar(50) DEFAULT NULL COMMENT '证书ID',
+供应商用户详情表
+	`id` varchar(50) NOT NULL,
+  `company_name` varchar(40) DEFAULT NULL COMMENT '企业名称',
+  `business_license_number` varchar(50) DEFAULT NULL COMMENT '营业执照号',
+  `the_applicant` varchar(15) DEFAULT NULL COMMENT '申请人',
+  `mobile_phone` varchar(20) DEFAULT NULL COMMENT '手机号码',
+  `e_mail` varchar(30) DEFAULT NULL COMMENT '电子邮箱',
+  `industry_type` varchar(30) DEFAULT NULL COMMENT '所属行业',
+  `enterprise_nature` varchar(30) DEFAULT NULL COMMENT '企业性质',
+  `registered_capital` decimal(20,0) DEFAULT NULL COMMENT '注册资本',
+  `setup_year` varchar(15) DEFAULT NULL COMMENT '成立年限01:1年内;02:1-5年;03:5-10年;04:10-15年;05:15年以上',
+  `legal_person_name` varchar(15) DEFAULT NULL COMMENT '法人姓名',
+  `legal_person_mobile_phone` varchar(20) DEFAULT NULL COMMENT '法人电话号码',
+  `company_address` varchar(50) DEFAULT NULL COMMENT '公司地址',
+  `business_license` varchar(50) DEFAULT NULL COMMENT '文件关联ID 工商营业执照',
+  `organization_code_certificate` varchar(50) DEFAULT NULL COMMENT '文件关联ID 组织机构代码证',
+  `under_the_code` varchar(30) DEFAULT NULL COMMENT '中征证码',
+  `legal_person_identity_front` varchar(50) DEFAULT NULL COMMENT '文件关联ID 法人身份证正面',
+  `legal_person_identity_behind` varchar(50) DEFAULT NULL COMMENT '文件关联ID 法人身份证反面',
+  `hand_held_identification_card` varchar(50) DEFAULT NULL COMMENT '文件关联ID 操作者手持身份证',
+  `hand_held_identification_card_behind` varchar(50) DEFAULT NULL COMMENT '操作人持身份证反面照',
+  `account_name` varchar(15) DEFAULT NULL COMMENT '账户名',
+  `legal_representative` varchar(10) DEFAULT NULL COMMENT '法定代表人',
+  `account_number` varchar(40) DEFAULT NULL COMMENT '对公账号',
+  `open_bank` varchar(25) DEFAULT NULL COMMENT '开户银行',
+  `outlets` varchar(40) DEFAULT NULL COMMENT '营业网点',
+  `outlets_province` varchar(40) DEFAULT NULL COMMENT '营业网点省',
+  `outlets_city` varchar(40) DEFAULT NULL COMMENT '营业网点城',
+  `outlets_detail` varchar(200) DEFAULT NULL COMMENT '营业网点具体营业部',
+  `electronic_signature` varchar(5) DEFAULT NULL COMMENT '电子签名',
+  `state` varchar(5) DEFAULT NULL COMMENT '状态 01:第一步 02:第二步 03:第三步 04:第四步 05:第五步 待核心企业审核 06 核心企业审核不通过 07 核心企业通过，待平台审核 08平台运营审核不通过 09 平台运营审核通过  10已签署平台服务协议 ',
+  `application_fee` decimal(10,0) DEFAULT NULL COMMENT '申请费用',
+  `create_time` timestamp NULL DEFAULT NULL COMMENT '创建时间',
+  `fk_supplier_info_id` varchar(50) DEFAULT NULL COMMENT '关联供应商企业主键id',
+  `update_time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '数据更新时间',
+  `contact_name` varchar(20) DEFAULT NULL COMMENT '联系人姓名',
+  `contact_phone` varchar(20) DEFAULT NULL COMMENT '联系人手机号',
+  `fail_reason` varchar(200) DEFAULT NULL COMMENT '未通过原因（可用作多个地方）',
+  `certificate_file_zip` varchar(50) DEFAULT NULL COMMENT '申请证书上传相关压缩包文件',
+  `apply_time` timestamp NULL DEFAULT NULL COMMENT '申请日期',
+  `platform_service_agreement` varchar(50) DEFAULT NULL COMMENT '平台服务协议签署对应文件',
+
+融资产品表（by h）
+融资产品类型表（by h）
+
+收款计划表
+应收账款表
+
+融资申请记录表
+
+服务费表（by h）
+	
+
+企业账号表（对公账户、放款账户、还款账户、提现账户）
+	id ID
+	fk_account_id 		关联账户表ID
+	account_name 		账户名称
+	account_no			账号
+	opening_bank		开户银行
+	opening_bank_code	开户银行编码
+	opening_province	开户行省份
+	opening_city		开户行城市
+	opening_branch		营业网点支行
+	state				状态 01 有效， 02 失效
+	account_type		账号类型(对公账户、放款账户、还款账户、提现账户)
+	create_time			创建时间
+	update_time			更新时间
+	
+专属账户表
+	id ID
+	account_name 		账户名称
+	bank_account_id 	银行电子账号
+	account_balance		账户余额
+	open_bank			开户行
+	open_date			开户时间
+	account_state		账户状态
+	create_time			创建时间
+	update_time			更新时间
+	
+账户明细表
+	开户明细表
+	id ID
+	`msghd_trdt` varchar(8) DEFAULT NULL COMMENT '交易日期YYYYMMDD',
+	`msghd_trtm` varchar(6) DEFAULT NULL COMMENT '交易时间 HH24MISS',
+	`cltacc_cltno` varchar(32) DEFAULT NULL COMMENT '客户号',
+	`cltacc_subno` varchar(24) DEFAULT NULL COMMENT '资金账号',
+	`cltacc_cltnm` varchar(128) DEFAULT NULL COMMENT '户名',
+	`clt_kd` varchar(2) DEFAULT NULL COMMENT '客户性质(0 个人;1 公司)',
+	`clt_nm` varchar(128) DEFAULT NULL COMMENT '姓名 公司：法定代表人 个人：自然人',
+	`clt_cdtp` varchar(4) DEFAULT NULL COMMENT '法定代表人/自然人 证件类型',
+	`clt_cdno` varchar(32) DEFAULT NULL COMMENT '法定代表人/自然人 证件号',
+	`clt_uscid` varchar(32) DEFAULT NULL COMMENT '统一社会信用代码',
+	`clt_mobno` varchar(24) DEFAULT NULL COMMENT '手机号码',
+	`clt_email` varchar(126) DEFAULT NULL COMMENT '电子邮箱',
+	`clt_postno` varchar(6) DEFAULT NULL COMMENT '邮政编码',
+	`clt_addr` varchar(192) DEFAULT NULL COMMENT '地址 企业开户时必填',
+	`acctp` varchar(2) DEFAULT NULL COMMENT '账户类型(1:客户资金账户\r\n3:合作方收益账户)',
+	`state` varchar(6) DEFAULT NULL COMMENT '账号状态\r\n0: 开户中\r\n1: 已开户\r\n3: 已销户\r\n4: 冻结\r\n8: 开户失败',
+	`cltacc_cltpid` varchar(32) DEFAULT NULL COMMENT '平台客户号',
+	`cltacc_bnkvid` varchar(64) DEFAULT NULL COMMENT '银行识别号',
+	`cltacc_bnkeid` varchar(64) DEFAULT NULL COMMENT '银行电子账号（跨行收款\r\n账号）',
+	`cltacc_openbkcd` varchar(12) DEFAULT NULL COMMENT '电子账户归属支行号',
+	`cltacc_openbknm` varchar(128) DEFAULT NULL COMMENT '电子账户归属支行名称',
+	`account_type` varchar(6) DEFAULT NULL COMMENT '租户账户类型',
+	`tenant_info_id` varchar(32) DEFAULT NULL COMMENT '租户id',
+	`tenant_name` varchar(50) DEFAULT NULL COMMENT '租户名称',
+	`tenant_no` varchar(20) DEFAULT NULL COMMENT '租户编号',
+	`organization_no` varchar(20) DEFAULT NULL COMMENT '组织机构编号',
+	`create_date` datetime DEFAULT NULL COMMENT '创建时间',
+	`update_date` datetime DEFAULT NULL COMMENT '更新时间',
+	`fk_settlement_account_id` varchar(32) DEFAULT NULL COMMENT '结算账号ID',
+	提现明细表
+	id ID
+	`msghd_trdt` varchar(8) DEFAULT NULL COMMENT '交易日期YYYYMMDD',
+	`msghd_trtm` varchar(6) DEFAULT NULL COMMENT '交易时间 HH24MISS',
+	`srl_ptnsrl` varchar(32) DEFAULT NULL COMMENT '合作方交易流水号',
+	`cltacc_subno` varchar(24) DEFAULT NULL COMMENT '资金账号',
+	`cltacc_cltnm` varchar(128) DEFAULT NULL COMMENT '户名',
+	`bkacc_accno` varchar(64) DEFAULT NULL COMMENT '银行账号(卡号) ',
+	`bkacc_accnm` varchar(128) DEFAULT NULL COMMENT '开户名称',
+	`amt_aclamt` bigint(16) DEFAULT NULL COMMENT '发生额(资金单位:分',
+	`amt_feeamt` bigint(16) DEFAULT NULL COMMENT '转账手续费',
+	`amt_ccycd` varchar(4) DEFAULT NULL COMMENT 'CNY',
+	`trsflag` varchar(4) DEFAULT NULL COMMENT 'A00 正常出金 \r\nB01 解冻资金后，再出金\r\n ',
+	`balflag` varchar(4) DEFAULT NULL COMMENT '结算方式标示 \r\nT0=T0结算出金\r\nT1=T1结算出金',
+	`usage` varchar(128) DEFAULT NULL COMMENT '资金用途(附言)',
+	`state` varchar(6) DEFAULT NULL COMMENT '提现状态',
+	`tenant_info_id` varchar(32) DEFAULT NULL COMMENT '租户id',
+	`tenant_no` varchar(20) DEFAULT NULL COMMENT '租户编号',
+	`tenant_name` varchar(50) DEFAULT NULL COMMENT '租户名称',
+	`organization_no` varchar(20) DEFAULT NULL COMMENT '组织机构编号',
+	`create_date` datetime DEFAULT NULL COMMENT '创建时间',
+	`update_date` datetime DEFAULT NULL COMMENT '更新时间',
+	转账明细表
+	id ID
+	`msghd_trdt` varchar(8) DEFAULT NULL COMMENT '交易日期YYYYMMDD',
+	`msghd_trtm` varchar(6) DEFAULT NULL COMMENT '交易时间 HH24MISS',
+	`srl_ptnsrl` varchar(32) DEFAULT NULL COMMENT '合作方交易流水号',
+	`billinfo_psubno` varchar(24) DEFAULT NULL COMMENT '付款方资金账号',
+	`billinfo_pnm` varchar(128) DEFAULT NULL COMMENT '付款方户名',
+	`billinfo_rsubno` varchar(24) DEFAULT NULL COMMENT '收款方资金账号',
+	`billinfo_rcltnm` varchar(128) DEFAULT NULL COMMENT '收款方户名',
+	`billinfo_orderno` varchar(32) DEFAULT NULL COMMENT '业务单号',
+	`billinfo_billno` varchar(32) DEFAULT NULL COMMENT '支付单号',
+	`billinfo_aclamt` bigint(16) DEFAULT NULL COMMENT '支付金额',
+	`billinfo_payfee` bigint(16) DEFAULT NULL COMMENT '付款方手续费',
+	`billinfo_payeefee` bigint(16) DEFAULT NULL COMMENT '收款方手续费',
+	`billinfo_ccycd` varchar(4) DEFAULT NULL COMMENT '币种',
+	`billinfo_usage` varchar(128) DEFAULT NULL COMMENT '资金用途',
+	`trsflag` varchar(4) DEFAULT NULL COMMENT '业务标示\r\nA00 普通订单支付\r\nB00 收款方收款成功后，再\r\n冻结资金\r\nB01 付款方解冻资金后，再\r\n支付给收款方',
+	`tenant_info_id` varchar(32) DEFAULT NULL COMMENT '租户id',
+	`tenant_no` varchar(20) DEFAULT NULL COMMENT '租户编号',
+	`tenant_name` varchar(50) DEFAULT NULL COMMENT '租户名称',
+	`organization_no` varchar(20) DEFAULT NULL COMMENT '组织机构编号',
+	`create_date` datetime DEFAULT NULL COMMENT '创建时间',
+	`update_date` datetime DEFAULT NULL COMMENT '更新时间',
+	冻解明细表
+	id ID
+	`msghd_trdt` varchar(8) DEFAULT NULL COMMENT '交易日期YYYYMMDD',
+	`msghd_trtm` varchar(6) DEFAULT NULL COMMENT '交易时间 HH24MISS',
+	`srl_ptnsrl` varchar(32) DEFAULT NULL COMMENT '合作方交易流水号',
+	`cltacc_subno` varchar(24) DEFAULT NULL COMMENT '资金账号',
+	`cltacc_cltnm` varchar(128) DEFAULT NULL COMMENT '户名',
+	`amt_aclamt` bigint(16) DEFAULT NULL COMMENT '发生额',
+	`amt_ccycd` varchar(4) DEFAULT NULL COMMENT '币种',
+	`usage` varchar(128) DEFAULT NULL COMMENT '资金用途(附言)',
+	`trsflag` varchar(4) DEFAULT NULL COMMENT '冻结业务标示\r\nA00 冻结\r\nB00 解冻',
+	`tenant_info_id` varchar(32) DEFAULT NULL COMMENT '租户id',
+	`tenant_no` varchar(20) DEFAULT NULL COMMENT '租户编号',
+	`tenant_name` varchar(50) DEFAULT NULL COMMENT '租户名称',
+	`organization_no` varchar(20) DEFAULT NULL COMMENT '组织机构编号',
+	`create_date` datetime DEFAULT NULL COMMENT '创建时间',
+	`update_date` datetime DEFAULT NULL COMMENT '更新时间',
+	
+
+文件表
+
+3.11
+邮件表？
+OK	放款账户|还款账户 放在银行账户表
+OK	time改为date 数据类型
+OK	remark 15
+
+
+
+3.13
+企业行为记录 时间，企业名称，描述
+
+
+
+
+
+多线程并发
+HashMap CurrentHashmap
+
+
+
+
+
+
+
+
+
+
+
+每个模块多少表，xmind里记
+用户表中，删证书其它字段
+
+梳理审核状态
+
+完善企业信息
+上传认证资料
+完善账户信息
+
+
+
+
+注册供应商-Detail入库-状态记录
+行为表记录 理由
+黑名单？拒绝供应商
+融资订单加处理状态
+
+
+状态 01:待企业完善信息 02:待上传认证资料 03:待完善账户信息 04:待运营审核 05：运营审核通过 06运营审核拒绝
+
+
+
+
+项目：
+1.项目管理系统
+2.业务支撑系统
+3.供应链金融平台系统
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
